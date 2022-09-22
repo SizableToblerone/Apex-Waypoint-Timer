@@ -9,8 +9,8 @@ root = Tk()
 root.title('Waypoint Timer')
 window_width = 200
 window_height = 350
-# root.geometry(f'{window_width}x{window_height}+1920+700')
-root.geometry(f'{window_width}x{window_height}+1500+100')
+root.geometry(f'{window_width}x{window_height}+2220+300')
+# root.geometry(f'{window_width}x{window_height}+1500+100')
 root.attributes('-alpha', 0.95)
 
 ringring = Canvas(root, width=300, height=300, bg='#999999')
@@ -165,14 +165,14 @@ def graphic_window(event=''):
         # Olympus
         waypoint(4*60+5, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # ,to 4:16 duration
         waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # to, 1:15 seconds
-        waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
+        waypoint(14*60+15, duration=45, color='#ff9900', text='Round 3 Ring')  # 14:15, 45 seconds
         waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
         waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
         waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minutes
     elif RV_map.get() == 3:
         waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
         waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-        waypoint(15*60+45, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:45C:\Users\bocaj\PycharmProjects\waypoint_timer
+        waypoint(15*60+45, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:45
         # Storm Point
         waypoint(3*60+54, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # 3:54 to 8:10, 4:16 duration
         waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 11:20 to 12:35, 1:15 seconds
