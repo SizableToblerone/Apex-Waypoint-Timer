@@ -4,6 +4,9 @@ from tkinter import *
 import pyglet as pyglet
 from pyautogui import *
 import time
+import PIL
+from PIL import Image, ImageTk
+import re
 
 root = Tk()
 root.title('Waypoint Timer')
@@ -16,13 +19,19 @@ root.attributes('-alpha', 0.95)
 ringring = Canvas(root, width=300, height=300, bg='#999999')
 arc = ringring.create_arc(50, 50, 200, 200)  # start=0, extent=0, fill='#4477ff', style=ARC)
 
-IV_start_time = IntVar()
-IV_start_time.set(0)
+SV_profile = StringVar()
+SV_profile.set('Default')
+SV_start_time = StringVar()
+SV_start_time.set('00:00')
+SV_duration = StringVar()
+SV_duration.set('22:00')
 RV_map = IntVar()
 SV_time_passed = StringVar()
 SV_time_remaining = StringVar()
 DV_radial_degree = DoubleVar()
 DV_radial_degree.set(0)
+SV_waypoints = StringVar()
+
 
 start_time = 0
 end_time = 60 * 22  # 22 minutes for the ring to close completely
@@ -31,7 +40,7 @@ tokking = False
 
 w_graphic = tkinter.Toplevel()
 
-pyglet.font.add_file('Digital_Dismay.otf')  # Your TTF file name here
+pyglet.font.add_file('Digital_Dismay.otf')  # Graphic timer font
 DigiDismay = tkinter.font.Font(family='Digital Dismay', size=30, weight='normal')
 
 # TODO: This shit broke, rounds too strongly. Fix it.
@@ -44,52 +53,58 @@ def main():
     """
     w_graphic.destroy()
 
-    # widget creation
-    l_row1 = Label(root, text='Start time (s):')
-    e_start_time = Entry(root, textvariable=IV_start_time, relief='sunken', bd=5, width=10)
+    playpause = PIL.ImageTk.PhotoImage(PIL.Image.open('./playpause.png'))
+    stop = PIL.ImageTk.PhotoImage(PIL.Image.open('./stop.png'))
+    save = PIL.ImageTk.PhotoImage(PIL.Image.open('./save.png'))
+    open = PIL.ImageTk.PhotoImage(PIL.Image.open('./open.png'))
 
-    b_start = Button(root, text='Start Timer', command=graphic_window)
-    b_end = Button(root, text='End Timer', command=finish)
+    # widget creation
+    l_profile = Label(root, text='Profile:')
+    e_profile = Entry(root, textvariable=SV_profile, relief='sunken', bd=2, width=10)
+    b_save = Button(root, image=save, command=save_times)
+    b_open = Menubutton(root, image=open)
+
+    b_play = Button(root, image=playpause, command=graphic_window)
+    b_stop = Button(root, image=stop, command=finish)
+
+    l_duration = Label(root, text='Duration:')
+    e_duration = Entry(root, textvariable=SV_duration, relief='sunken', bd=2, width=10)
 
     l_2a = Label(root, text='Time Passed:')
-    l_2b = Label(root, textvariable=SV_time_passed)
+    e_2b = Entry(root, textvariable=SV_start_time, relief='sunken', bd=2, width=5)
 
     l_3a = Label(root, text='Time Remaining:')
     l_3b = Label(root, textvariable=SV_time_remaining)
 
-    l_4a = Radiobutton(root, variable=RV_map, value=0, text="Kings Canyon")
-    l_5a = Radiobutton(root, variable=RV_map, value=1, text="World's Edge")
-    l_6a = Radiobutton(root, variable=RV_map, value=2, text="Olympus")
-    l_7a = Radiobutton(root, variable=RV_map, value=3, text="Storm Point")
-
-    l_8a = Label(root, text="""
-    While this window is open, the
-    timer is scanning your screen
-    for match start/end triggers.
-    Closing this window exits
-    the application. Minimizing
-    this window will not interfere
-    with the program's function.""")
+    l_4a = Label(root, text="Waypoints")
+    e_5a = Text(root, height=50, width=10, relief='sunken')
 
     # widget placement
     num_rows = 4
     vert_spacing = 26
-    l_row1.place(x=window_width/2, y=vert_spacing*0, anchor=NE)
-    e_start_time.place(x=window_width/2, y=vert_spacing*0, anchor=NW)
-    b_start.place(x=window_width/2, y=vert_spacing*1, anchor=NE)
-    b_end.place(x=window_width/2, y=vert_spacing*1, anchor=NW)
-    l_2a.place(x=window_width/2, y=vert_spacing*2, anchor=NE)
-    l_2b.place(x=window_width/2, y=vert_spacing*2, anchor=NW)
-    l_3a.place(x=window_width/2, y=vert_spacing*3, anchor=NE)
-    l_3b.place(x=window_width/2, y=vert_spacing*3, anchor=NW)
-    l_4a.place(x=35, y=vert_spacing*4, anchor=NW)
-    l_5a.place(x=35, y=vert_spacing*5, anchor=NW)
-    l_6a.place(x=35, y=vert_spacing*6, anchor=NW)
-    l_7a.place(x=35, y=vert_spacing*7, anchor=NW)
-    l_8a.place(x=window_width/2, y=vert_spacing*8, anchor=N)
+    l_profile.place(x=window_width/2, y=vert_spacing*0, anchor=NE)
+    e_profile.place(x=window_width/2, y=vert_spacing*0, anchor=NW)
+    b_save.place(x=window_width/2+60, y=vert_spacing*0, anchor=NW)
+
+    l_duration.place(x=window_width/2, y=vert_spacing*1, anchor=NE)
+    e_duration.place(x=window_width/2, y=vert_spacing*1, anchor=NW)
+    b_play.place(x=window_width/2, y=vert_spacing*2, anchor=NE)
+    b_stop.place(x=window_width/2, y=vert_spacing*2, anchor=NW)
+    l_2a.place(x=window_width/2, y=vert_spacing*3, anchor=NE)
+    e_2b.place(x=window_width/2, y=vert_spacing*3, anchor=NW)
+    l_3a.place(x=window_width/2, y=vert_spacing*4, anchor=NE)
+    l_3b.place(x=window_width/2, y=vert_spacing*4, anchor=NW)
+    l_4a.place(x=35, y=vert_spacing*5, anchor=NW)
+    e_5a.place(x=35, y=vert_spacing*6, anchor=NW)
+    # l_5a.place(x=35, y=vert_spacing*5, anchor=NW)
+    # l_6a.place(x=35, y=vert_spacing*6, anchor=NW)
+    # l_7a.place(x=35, y=vert_spacing*7, anchor=NW)
+    # l_8a.place(x=window_width/2, y=vert_spacing*8, anchor=N)
+    # e_9a.place(x=window_width/2, y=vert_spacing*16, anchor=N)
 
     # e_start_time.focus()
-    root.bind(sequence='<Return>', func=graphic_window)
+    # root.bind(sequence='<Return>', func=graphic_window)
+    # root.bind(sequence='<Return>', func=save_times)
 
     # starts loop to scan for triggers outside mainloop
     root.after(2000, trigger_scanner)
@@ -119,7 +134,8 @@ def graphic_window(event=''):
     w_graphic.attributes("-transparentcolor", transparent)
     w_graphic.overrideredirect(1)
 
-    start_time = time.time() - IV_start_time.get()
+    start_time = time.time() - minsecs_str_to_secs(SV_start_time.get())
+
     ringring = Canvas(w_graphic, width=300, height=300, bg=transparent)
     coords = 350-(300*timer_scale), 350-(300*timer_scale), (300*timer_scale)-50, (300*timer_scale)-50
     arc = ringring.create_arc(coords, start=90, extent=0, fill='#4477ff', style=ARC, outline='#4477ff', width=20)
@@ -141,7 +157,7 @@ def graphic_window(event=''):
         waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
         waypoint(15 * 60 + 0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
         # King's Canyon
-        waypoint(3*60+50, duration=3*60+40, color='#ff9900', text='Round 1 Ring')  # 3:50,to 3:40 duration
+        waypoint(1*60+50, duration=3*60+40, color='#ff9900', text='Round 1 Ring')  # 3:50,to 3:40 duration
         waypoint(10*60+25, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 10:25 to, 1:15 seconds
         waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
         waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
@@ -192,6 +208,24 @@ def graphic_window(event=''):
     w_graphic.mainloop()
 
 
+def save_times():
+    global e_5a
+
+    # with open(f'rollcallTextfiles/rc_{event}.txt', 'a') as file:
+    #     file.write(f':grey_question:{user}\n')
+    return
+
+
+def minsecs_str_to_secs(minsecs_str='00:00'):
+    minsecs = re.findall('\d+', minsecs_str)    # minutes and seconds
+    seconds = 0
+    if minsecs:
+        seconds = int(minsecs[0]) * 60  # convert minutes to seconds
+        if len(minsecs) > 1:
+            seconds += int(minsecs[1])
+    return seconds
+
+
 def trigger_scanner():
     """
     Loop that runs alongside tkinter mainloop, checking for on-screen triggers.
@@ -236,6 +270,10 @@ def tock(event='', window=root):
         SV_time_remaining.set('{:02d}:{:02d}'.format(
             int((end_time - time.time()) / 60),  # minutes
             int((end_time - time.time()) % 60)  # seconds
+                ))
+        SV_start_time.set('{:02d}:{:02d}'.format(
+            int((time.time() - start_time) / 60),  # minutes
+            int((time.time() - start_time) % 60)  # seconds
                 ))
 
         # meter_radians = seconds_to_radians(time.time() - start_time)  # elapsed time in radians
