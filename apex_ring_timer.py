@@ -31,6 +31,10 @@ SV_time_remaining = StringVar()
 DV_radial_degree = DoubleVar()
 DV_radial_degree.set(0)
 SV_waypoints = StringVar()
+e_waypoints = Text(root, height=50, width=20, relief='sunken')
+
+openpng = PIL.ImageTk.PhotoImage(PIL.Image.open('./open.png'))
+b_open = Menubutton(root, direction='right', relief='flat', image=openpng)
 
 
 start_time = 0
@@ -56,68 +60,72 @@ def main():
     playpause = PIL.ImageTk.PhotoImage(PIL.Image.open('./playpause.png'))
     stop = PIL.ImageTk.PhotoImage(PIL.Image.open('./stop.png'))
     save = PIL.ImageTk.PhotoImage(PIL.Image.open('./save.png'))
-    open = PIL.ImageTk.PhotoImage(PIL.Image.open('./open.png'))
 
     # widget creation
-    l_profile = Label(root, text='Profile:')
-    e_profile = Entry(root, textvariable=SV_profile, relief='sunken', bd=2, width=10)
-    b_save = Button(root, image=save, command=save_times)
-    b_open = Menubutton(root, image=open)
-
-    b_play = Button(root, image=playpause, command=graphic_window)
-    b_stop = Button(root, image=stop, command=finish)
+    populate_open_menu()
+    e_profile = Entry(root, textvariable=SV_profile, relief='sunken', bd=2, width=20)
+    b_save = Button(root, image=save, command=save_profile, relief='flat')
+    b_trash = Button(root, image=save, command=save_profile, relief='flat')
 
     l_duration = Label(root, text='Duration:')
     e_duration = Entry(root, textvariable=SV_duration, relief='sunken', bd=2, width=10)
 
+    b_play = Button(root, image=playpause, command=graphic_window, relief='flat')
+    b_stop = Button(root, image=stop, command=finish, relief='flat')
+
     l_2a = Label(root, text='Time Passed:')
     e_2b = Entry(root, textvariable=SV_start_time, relief='sunken', bd=2, width=5)
 
-    l_3a = Label(root, text='Time Remaining:')
+    l_3a = Label(root, text='Remaining:')
     l_3b = Label(root, textvariable=SV_time_remaining)
 
     l_4a = Label(root, text="Waypoints")
-    e_5a = Text(root, height=50, width=10, relief='sunken')
+    # e_waypoints = Text(root, height=50, width=20, relief='sunken')
 
     # widget placement
-    num_rows = 4
+    num_rows = 9
     vert_spacing = 26
-    l_profile.place(x=window_width/2, y=vert_spacing*0, anchor=NE)
-    e_profile.place(x=window_width/2, y=vert_spacing*0, anchor=NW)
-    b_save.place(x=window_width/2+60, y=vert_spacing*0, anchor=NW)
+    b_open.place(x=10, y=vert_spacing*0, anchor=NW)
+    e_profile.place(x=45, y=vert_spacing*0, anchor=NW)
+    b_save.place(x=window_width-23, y=vert_spacing*0, anchor=NW)
 
     l_duration.place(x=window_width/2, y=vert_spacing*1, anchor=NE)
     e_duration.place(x=window_width/2, y=vert_spacing*1, anchor=NW)
-    b_play.place(x=window_width/2, y=vert_spacing*2, anchor=NE)
-    b_stop.place(x=window_width/2, y=vert_spacing*2, anchor=NW)
+    b_play.place(x=window_width/2, y=vert_spacing*2-8, anchor=NE)
+    b_stop.place(x=window_width/2, y=vert_spacing*2-8, anchor=NW)
     l_2a.place(x=window_width/2, y=vert_spacing*3, anchor=NE)
     e_2b.place(x=window_width/2, y=vert_spacing*3, anchor=NW)
     l_3a.place(x=window_width/2, y=vert_spacing*4, anchor=NE)
     l_3b.place(x=window_width/2, y=vert_spacing*4, anchor=NW)
     l_4a.place(x=35, y=vert_spacing*5, anchor=NW)
-    e_5a.place(x=35, y=vert_spacing*6, anchor=NW)
-    # l_5a.place(x=35, y=vert_spacing*5, anchor=NW)
-    # l_6a.place(x=35, y=vert_spacing*6, anchor=NW)
-    # l_7a.place(x=35, y=vert_spacing*7, anchor=NW)
-    # l_8a.place(x=window_width/2, y=vert_spacing*8, anchor=N)
-    # e_9a.place(x=window_width/2, y=vert_spacing*16, anchor=N)
+    e_waypoints.place(x=20, y=vert_spacing*6, anchor=NW)
 
     # e_start_time.focus()
     # root.bind(sequence='<Return>', func=graphic_window)
-    # root.bind(sequence='<Return>', func=save_times)
+    # root.bind(sequence='<Return>', func=save_profile)
 
     # starts loop to scan for triggers outside mainloop
     root.after(2000, trigger_scanner)
     # starts mainloop
     root.mainloop()
+    # e_waypoints.insert(INSERT, "5:20\n"
+    #                            "12:16\n"
+    #                            "15:45\n"
+    #                            "3:54-8:10\n"
+    #                            "11:20-12:35\n"
+    #                            "15:00-15:45\n"
+    #                            "17:45-16:04\n"
+    #                            "19:10-19:50\n"
+    #                            "20:00-22:00")
 
 
 def graphic_window(event=''):
     """
     Graphic timer that tracks the timing of events throughout an Apex Legends BR game.
     """
-    global start_time, arc, ringring, tokking, w_graphic, end_time
+    global start_time, arc, ringring, tokking, w_graphic, end_time, e_waypoints
 
+    finish()
     w_graphic = tkinter.Toplevel()
 
     graphic_width = 300
@@ -148,54 +156,68 @@ def graphic_window(event=''):
         tokking = True
         tock(root)
 
-    waypoint(5*60+20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
-    waypoint(12*60+16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-    # waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
+        # waypoint(5*60+20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
+        # waypoint(12*60+16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
+        # waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
 
-    if RV_map.get() == 0:
-        waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
-        waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-        waypoint(15 * 60 + 0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
-        # King's Canyon
-        waypoint(1*60+50, duration=3*60+40, color='#ff9900', text='Round 1 Ring')  # 3:50,to 3:40 duration
-        waypoint(10*60+25, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 10:25 to, 1:15 seconds
-        waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
-        waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
-        waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
-        waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minute duration
-    elif RV_map.get() == 1:
-        waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
-        waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-        waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
-        # World's Edge
-        waypoint(3*60+54, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # ,to 4:16 duration
-        waypoint(10*60+30, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 10:30 to 11:45 1:15 seconds
-        waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
-        waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
-        waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
-        waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minutes
-    elif RV_map.get() == 2:
-        waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
-        waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-        waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
-        # Olympus
-        waypoint(4*60+5, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # ,to 4:16 duration
-        waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # to, 1:15 seconds
-        waypoint(14*60+15, duration=45, color='#ff9900', text='Round 3 Ring')  # 14:15, 45 seconds
-        waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
-        waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
-        waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minutes
-    elif RV_map.get() == 3:
-        waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
-        waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
-        waypoint(15*60+45, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:45
-        # Storm Point
-        waypoint(3*60+54, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # 3:54 to 8:10, 4:16 duration
-        waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 11:20 to 12:35, 1:15 seconds
-        waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # 15:00 to 15:45, 45 seconds
-        waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # 17:45(18:00?) to 16:04, 40 seconds
-        waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # 19:10(?) to 19:50, 40 seconds
-        waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # 20:00(?) to 22:00, 2 minutes
+        # if RV_map.get() == 0:
+        #     waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
+        #     waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
+        #     waypoint(15 * 60 + 0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
+        #     # King's Canyon
+        #     waypoint(1*60+50, duration=3*60+40, color='#ff9900', text='Round 1 Ring')  # 3:50,to 3:40 duration
+        #     waypoint(10*60+25, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 10:25 to, 1:15 seconds
+        #     waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
+        #     waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
+        #     waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
+        #     waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minute duration
+        # elif RV_map.get() == 1:
+        #     waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
+        #     waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
+        #     waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
+        #     # World's Edge
+        #     waypoint(3*60+54, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # ,to 4:16 duration
+        #     waypoint(10*60+30, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 10:30 to 11:45 1:15 seconds
+        #     waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # , 45 seconds
+        #     waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
+        #     waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
+        #     waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minutes
+        # elif RV_map.get() == 2:
+        #     waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
+        #     waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
+        #     waypoint(15*60+0, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:00
+        #     # Olympus
+        #     waypoint(4*60+5, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # ,to 4:16 duration
+        #     waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # to, 1:15 seconds
+        #     waypoint(14*60+15, duration=45, color='#ff9900', text='Round 3 Ring')  # 14:15, 45 seconds
+        #     waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # to , 40 seconds
+        #     waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # to , 40 seconds
+        #     waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # to , 2 minutes
+        # elif RV_map.get() == 3:
+        #     waypoint(5 * 60 + 20, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 5:20
+        #     waypoint(12 * 60 + 16, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 12:16
+        #     waypoint(15*60+45, duration=10, color='#d1c767', text='Care Package', width=20)  # care package 15:45
+        #     # Storm Point
+        #     waypoint(3*60+54, duration=4*60+16, color='#ff9900', text='Round 1 Ring')  # 3:54 to 8:10, 4:16 duration
+        #     waypoint(11*60+20, duration=1*60+15, color='#ff9900', text='Round 2 Ring')  # 11:20 to 12:35, 1:15 seconds
+        #     waypoint(15*60, duration=45, color='#ff9900', text='Round 3 Ring')  # 15:00 to 15:45, 45 seconds
+        #     waypoint(17*60+45, duration=40, color='#ff9900', text='Round 4 Ring')  # 17:45(18:00?) to 16:04, 40 seconds
+        #     waypoint(19*60+10, duration=40, color='#ff9900', text='Round 5 Ring')  # 19:10(?) to 19:50, 40 seconds
+        #     waypoint(20*60, duration=2*60, color='#ff9900', text='Final Ring')  # 20:00(?) to 22:00, 2 minutes
+
+    # parse text into waypoints
+    waypoints_entry_lines = re.split('\n', e_waypoints.get(1.0, "end-1c"))
+    for line in waypoints_entry_lines:
+        times = re.findall('(\d+:\d+)', line)
+        if len(times) == 0:
+            continue
+        if len(times) == 1:
+            waypoint(minsecs_str_to_secs(times[0]), duration=10, color='#d1c767', text='Care Package', width=20)
+        if "+" in line:
+            waypoint(minsecs_str_to_secs(times[0]), duration=minsecs_str_to_secs(times[1]), color='#ff9900')
+        if "-" in line:
+            waypoint(minsecs_str_to_secs(times[0]),
+                     duration=minsecs_str_to_secs(times[1])-minsecs_str_to_secs(times[0]), color='#ff9900')
 
     # widget placement
     num_rows = 4
@@ -208,12 +230,32 @@ def graphic_window(event=''):
     w_graphic.mainloop()
 
 
-def save_times():
-    global e_5a
-
-    # with open(f'rollcallTextfiles/rc_{event}.txt', 'a') as file:
-    #     file.write(f':grey_question:{user}\n')
+def populate_open_menu():
+    b_open.menu = Menu(b_open, tearoff=0)
+    b_open["menu"] = b_open.menu
+    saved_profiles = os.listdir('wp_profiles')
+    for profile in saved_profiles:
+        b_open.menu.add_command(label=profile[:-4], command=lambda x=profile[:-4]: load_profile(f'{x}'))
     return
+
+
+def save_profile():
+    with open(f'wp_profiles/{SV_profile.get()}.txt', 'w') as file:
+        file.write(e_waypoints.get(1.0, "end-1c"))
+    populate_open_menu()
+    return
+
+
+def load_profile(profile=SV_profile.get()):
+    SV_profile.set(profile)
+    e_waypoints.delete(1.0, "end")
+    with open(f'wp_profiles/{profile}.txt', 'r') as file:
+        e_waypoints.insert(INSERT, file.read())
+    return
+
+
+def trash_profile(profile=SV_profile.get()):
+    return os.remove(f'wp_profiles/{profile}.txt')
 
 
 def minsecs_str_to_secs(minsecs_str='00:00'):
