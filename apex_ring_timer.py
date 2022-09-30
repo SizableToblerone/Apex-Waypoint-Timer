@@ -151,7 +151,7 @@ def graphic_window(event=''):
     l_elapsed = Label(w_graphic, textvariable=SV_time_passed, bg=transparent, font=DigiDismay, fg='black')
 
     ringring.itemconfig(arc, fill='#4477ff', extent=0)
-    end_time = start_time + (60 * 22)
+    end_time = start_time + minsecs_str_to_secs(SV_duration.get())
     if not tokking:
         tokking = True
         tock(root)
@@ -335,7 +335,7 @@ def waypoint(placement, duration=5, color='#000000', width=5, text='', label_fon
 
 
 def seconds_to_radians(seconds):
-    time_percent = seconds / 1320  # percentage of 22 minutes (1320 seconds)
+    time_percent = seconds / minsecs_str_to_secs(SV_duration.get())  # percentage of 22 minutes (1320 seconds)
     return time_percent * 360
 
 
