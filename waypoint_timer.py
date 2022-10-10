@@ -15,8 +15,8 @@ root = Tk()
 root.title('Waypoint Timer')
 window_width = 200
 window_height = 350
-root.geometry(f'{window_width}x{window_height}+2520+300')   # debug location
-# root.geometry(f'{window_width}x{window_height}+1500+100') # publish location
+# root.geometry(f'{window_width}x{window_height}+2520+300')   # debug location
+root.geometry(f'{window_width}x{window_height}+1500+100') # publish location
 root.attributes('-alpha', 0.95)
 
 ringring = Canvas(root, width=300, height=300, bg='#999999')
@@ -104,7 +104,7 @@ def main():
     b_stop.place(x=window_width/2, y=vert_spacing*2-8, anchor=NW)
 
     b_progress.config(image=time_elapsed, command=progress_mode, relief='flat')
-    b_progress.place(x=window_width/2, y=vert_spacing*3, anchor=NE)
+    b_progress.place(x=window_width/2, y=vert_spacing*3-2, anchor=NE)
 
     e_progress.config(textvariable=SV_time_passed, relief='sunken', bd=2, width=5)
     e_progress.place(x=window_width/2, y=vert_spacing*3, anchor=NW)
@@ -125,11 +125,18 @@ def main():
 
 
 def play_pause(event=''):
-    global tokking, paused
+    global tokking, paused, start_time
     if not tokking:
         graphic_window(event)
         return
     paused = not paused
+    if not paused:  # if JUST UN-PAUSED, due to prev line:
+        if b_progress.configure()['image'][4] == 'pyimage2':  # if in time_elapsed mode
+            start_time = time.time() - minsecs_str_to_secs(SV_time_passed.get())
+        else:  # if in time_remaining mode
+            start_time = time.time() - (
+                        minsecs_str_to_secs(SV_duration.get()) - minsecs_str_to_secs(SV_time_remaining.get()))
+    print(f'paused = {paused}')
     return
 
 
@@ -160,6 +167,7 @@ def graphic_window(event=''):
 
     if b_progress.configure()['image'][4] == 'pyimage2':    # if in time_elapsed mode
         start_time = time.time() - minsecs_str_to_secs(SV_time_passed.get())
+        print("time_elapsed mode")
     else:                                                   # if in time_remaining mode
         start_time = time.time() - (minsecs_str_to_secs(SV_duration.get()) - minsecs_str_to_secs(SV_time_remaining.get()))
 
@@ -275,47 +283,6 @@ def trash_profile():
         populate_open_menu()
     return
 
-
-# def populate_open_menu():
-#     b_open.menu = Menu(b_open, tearoff=0)
-#     b_open["menu"] = b_open.menu
-#     saved_profiles = os.listdir(f'{appdata_path}\wp_profiles')
-#     for filename in saved_profiles:
-#         split = re.findall("(.*)Δ(.*)", filename[:-4]).pop()
-#         profile = split[0]
-#         duration = '00:00'
-#         if split:
-#             duration = split[1].replace("_", ":")
-#         b_open.menu.add_command(label=profile, command=lambda x=profile, y=duration: load_profile(f'{x}', f'{y}'))
-#     return
-#
-#
-# def save_profile():
-#     duration = SV_duration.get().replace(":", "_")
-#     with open(f'{appdata_path}\wp_profiles/{SV_profile.get()}Δ{duration}.txt', 'w') as file:
-#         file.write(e_waypoints.get(1.0, "end-1c"))
-#     populate_open_menu()
-#     return
-#
-#
-# def load_profile(profile=SV_profile.get(), duration=SV_duration.get()):
-#     SV_profile.set(profile)
-#     e_waypoints.delete(1.0, "end")
-#     SV_duration.set(duration)
-#     duration = duration.replace(":", "_")
-#     with open(f'{appdata_path}\wp_profiles/{profile}Δ{duration}.txt', 'r') as file:
-#         e_waypoints.insert(INSERT, file.read())
-#     return
-#
-#
-# def trash_profile():
-#     if messagebox.askokcancel('Delete Profile', f'Are you sure you want to delete {SV_profile.get()}?\n'
-#                                                 f'It will be gone forever!'):
-#         os.remove(f'{appdata_path}\wp_profiles/{SV_profile.get()}Δ{duration}.txt')
-#         e_waypoints.delete(1.0, "end")
-#         SV_profile.set('')
-#         populate_open_menu()
-#     return
 
 def minsecs_str_to_secs(minsecs_str='00:00'):
     minsecs = re.findall('\d+', minsecs_str)    # minutes and seconds
